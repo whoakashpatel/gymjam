@@ -6,6 +6,7 @@ import os
 import re
 
 app = Flask(__name__)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://username:password@localhost/dbname'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gym.db'
 app.config['SECRET_KEY'] = 'supersecretkey'
 db = SQLAlchemy(app)
@@ -42,12 +43,16 @@ def login():
             return redirect(url_for('login'))
 
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
+        if not user:
+            flash("No user exists with such username.", "danger")
+            return redirect(url_for('login'))
+
+        if user.password == password:
             session['user'] = username
             flash("Logged in successfully.", "success")
             return redirect(url_for('home'))
         else:
-            flash("Incorrect username or password.", "danger")
+            flash("Incorrect password.", "danger")
             return redirect(url_for('login'))
 
     return render_template('login.html')
